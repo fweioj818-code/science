@@ -1,0 +1,2295 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>자유 낙하 운동 실험실</title>
+<style>
+  :root{
+    --bg:#f4f7fb;
+    --panel:#ffffff;
+    --panel-2:#eef4ff;
+    --line:#d7e1f3;
+    --text:#17324d;
+    --sub:#4c6785;
+    --primary:#2b6de4;
+    --primary-2:#4f8cff;
+    --accent:#1dbf73;
+    --warn:#ef5350;
+    --yellow:#f3b93f;
+    --shadow:0 10px 28px rgba(20,44,84,.08);
+    --radius:18px;
+    --button-h:46px;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{
+    margin:0;
+    height:100%;
+    font-family: "Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+    background:linear-gradient(180deg,#f8fbff 0%, #eef4ff 100%);
+    color:var(--text);
+    overflow:hidden;
+  }
+
+  body{
+    display:flex;
+    align-items:stretch;
+    justify-content:center;
+  }
+
+  .app{
+    width:100%;
+    height:100dvh;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    padding:10px;
+  }
+
+  .topbar{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:12px 16px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    min-height:82px;
+  }
+
+  .title-wrap{
+    min-width:0;
+    flex:1;
+  }
+
+  .title{
+    margin:0 0 4px;
+    font-size:1.45rem;
+    font-weight:800;
+    letter-spacing:-.02em;
+  }
+
+  .subtitle{
+    margin:0;
+    color:var(--sub);
+    font-size:.95rem;
+    line-height:1.45;
+  }
+
+  .topbar-side{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:6px;
+    min-width:240px;
+  }
+
+  .stage-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    background:#eef5ff;
+    color:var(--primary);
+    border:1px solid #cfe0ff;
+    border-radius:999px;
+    padding:8px 12px;
+    font-size:.92rem;
+    font-weight:700;
+  }
+
+  .progress-row{
+    width:100%;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+
+  .progress-bar{
+    flex:1;
+    height:10px;
+    background:#e7edf8;
+    border-radius:999px;
+    overflow:hidden;
+    border:1px solid #dce6f7;
+  }
+
+  .progress-fill{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,var(--primary),var(--primary-2));
+    border-radius:999px;
+    transition:width .3s ease;
+  }
+
+  .progress-text{
+    font-size:.85rem;
+    color:var(--sub);
+    white-space:nowrap;
+  }
+
+  .main{
+    flex:1;
+    min-height:0;
+    display:flex;
+    gap:10px;
+  }
+
+  .left-col{
+    flex:1.35;
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+
+  .right-col{
+    width:380px;
+    min-width:320px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    min-width:0;
+  }
+
+  .panel-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    padding:12px 14px 10px;
+    border-bottom:1px solid #edf2fb;
+  }
+
+  .panel-title{
+    margin:0;
+    font-size:1rem;
+    font-weight:800;
+  }
+
+  .hint{
+    color:var(--sub);
+    font-size:.84rem;
+  }
+
+  .sim-panel{
+    flex:1;
+    min-height:0;
+    display:flex;
+    flex-direction:column;
+  }
+
+  .sim-canvas-wrap{
+    position:relative;
+    flex:1;
+    min-height:280px;
+    padding:10px 12px 12px;
+  }
+
+  canvas{
+    width:100%;
+    height:100%;
+    display:block;
+    background:
+      radial-gradient(circle at top left, rgba(93,147,255,.08), transparent 35%),
+      linear-gradient(180deg,#fafdff 0%, #f2f7ff 100%);
+    border:1px solid #dbe7fb;
+    border-radius:16px;
+    touch-action:none;
+  }
+
+  .sim-overlay{
+    position:absolute;
+    inset:18px 18px 18px 18px;
+    pointer-events:none;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+  }
+
+  .mini-chip{
+    background:rgba(255,255,255,.9);
+    border:1px solid #dbe6fa;
+    backdrop-filter: blur(4px);
+    border-radius:14px;
+    padding:8px 10px;
+    color:var(--sub);
+    font-size:.82rem;
+    box-shadow:0 6px 20px rgba(34,67,120,.08);
+  }
+
+  .legend{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    max-width:60%;
+  }
+
+  .legend .dot{
+    display:inline-block;
+    width:12px;
+    height:12px;
+    border-radius:50%;
+    margin-right:6px;
+    vertical-align:-1px;
+  }
+
+  .legend-item{
+    display:flex;
+    align-items:center;
+    gap:4px;
+  }
+
+  .bottom-info{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:8px;
+    padding:0 12px 12px;
+  }
+
+  .metric-card{
+    background:var(--panel-2);
+    border:1px solid #d9e7ff;
+    border-radius:14px;
+    padding:10px 12px;
+    min-height:92px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+  }
+
+  .metric-title{
+    font-size:.85rem;
+    color:var(--sub);
+    font-weight:700;
+  }
+
+  .metric-main{
+    font-size:1rem;
+    font-weight:800;
+    line-height:1.35;
+  }
+
+  .metric-sub{
+    font-size:.82rem;
+    color:var(--sub);
+    line-height:1.35;
+  }
+
+  .controls-panel{
+    display:flex;
+    flex-direction:column;
+    min-height:260px;
+  }
+
+  .controls-body{
+    padding:12px;
+    display:grid;
+    grid-template-columns:1fr;
+    gap:12px;
+    overflow:auto;
+  }
+
+  .group{
+    background:#fbfdff;
+    border:1px solid #e5edf9;
+    border-radius:14px;
+    padding:12px;
+  }
+
+  .group-title{
+    margin:0 0 10px;
+    font-size:.92rem;
+    font-weight:800;
+    color:#22476f;
+  }
+
+  .row{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    margin-bottom:10px;
+  }
+
+  .row:last-child{
+    margin-bottom:0;
+  }
+
+  .label{
+    min-width:92px;
+    color:#335370;
+    font-size:.88rem;
+    font-weight:700;
+  }
+
+  .grow{ flex:1; min-width:0; }
+  .value{
+    min-width:60px;
+    text-align:right;
+    color:var(--primary);
+    font-weight:800;
+    font-size:.9rem;
+  }
+
+  input[type="range"]{
+    width:100%;
+    accent-color:var(--primary);
+    height:22px;
+  }
+
+  select, button, .toggle, .choice-btn{
+    font:inherit;
+  }
+
+  select{
+    width:100%;
+    height:42px;
+    border-radius:12px;
+    border:1px solid #d3e1f8;
+    background:#fff;
+    color:var(--text);
+    padding:0 12px;
+    outline:none;
+  }
+
+  .btn-row{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:8px;
+  }
+
+  button{
+    min-height:var(--button-h);
+    border:none;
+    border-radius:14px;
+    padding:10px 12px;
+    font-weight:800;
+    cursor:pointer;
+    transition:transform .12s ease, box-shadow .16s ease, background .16s ease, opacity .16s ease;
+  }
+
+  button:active{ transform:translateY(1px) scale(.995); }
+
+  .btn-primary{
+    background:linear-gradient(180deg,var(--primary-2),var(--primary));
+    color:#fff;
+    box-shadow:0 8px 18px rgba(43,109,228,.24);
+  }
+
+  .btn-secondary{
+    background:#eef4ff;
+    color:var(--primary);
+    border:1px solid #d7e5ff;
+  }
+
+  .btn-danger{
+    background:#fff2f1;
+    color:#c74445;
+    border:1px solid #ffd2cf;
+  }
+
+  .btn-ghost{
+    background:#f5f8fd;
+    color:#355677;
+    border:1px solid #dde7f4;
+  }
+
+  button:disabled{
+    opacity:.48;
+    cursor:not-allowed;
+    box-shadow:none;
+  }
+
+  .toggle-line{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+  }
+
+  .toggle-box{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:6px;
+    background:#eff4fb;
+    border:1px solid #dce7f8;
+    border-radius:999px;
+  }
+
+  .toggle-btn{
+    border-radius:999px;
+    min-height:36px;
+    min-width:74px;
+    padding:8px 12px;
+    background:transparent;
+    color:#516b87;
+    border:1px solid transparent;
+  }
+
+  .toggle-btn.active{
+    background:#fff;
+    border-color:#d2e0fb;
+    color:var(--primary);
+    box-shadow:0 2px 10px rgba(64,107,181,.09);
+  }
+
+  .status-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px;
+  }
+
+  .status-card{
+    background:#f7faff;
+    border:1px solid #e3edf9;
+    border-radius:12px;
+    padding:10px;
+  }
+
+  .status-card strong{
+    display:block;
+    font-size:.82rem;
+    color:var(--sub);
+    margin-bottom:4px;
+  }
+
+  .status-card span{
+    font-size:.95rem;
+    font-weight:800;
+  }
+
+  .mission-panel{
+    min-height:240px;
+    display:flex;
+    flex-direction:column;
+  }
+
+  .mission-body{
+    padding:14px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    overflow:auto;
+    min-height:0;
+  }
+
+  .step-title{
+    margin:0;
+    font-size:1.08rem;
+    font-weight:900;
+  }
+
+  .step-desc{
+    margin:0;
+    color:var(--sub);
+    line-height:1.55;
+    font-size:.96rem;
+  }
+
+  .mission-card{
+    background:linear-gradient(180deg,#fbfdff,#f5f9ff);
+    border:1px solid #e2ecfb;
+    border-radius:16px;
+    padding:14px;
+  }
+
+  .choice-list{
+    display:grid;
+    gap:8px;
+  }
+
+  .choice-btn{
+    min-height:48px;
+    border-radius:14px;
+    border:1px solid #d6e4fb;
+    background:#fff;
+    color:var(--text);
+    text-align:left;
+    padding:12px 14px;
+    font-weight:700;
+  }
+
+  .choice-btn:hover{
+    background:#f7fbff;
+  }
+
+  .feedback{
+    display:none;
+    padding:12px 14px;
+    border-radius:14px;
+    font-size:.95rem;
+    line-height:1.5;
+    border:1px solid transparent;
+  }
+
+  .feedback.show{ display:block; }
+
+  .feedback.correct{
+    background:#eefaf3;
+    color:#15663f;
+    border-color:#c9edd8;
+  }
+
+  .feedback.wrong{
+    background:#fff5f4;
+    color:#9c3533;
+    border-color:#ffd9d6;
+  }
+
+  .concept-box{
+    background:#f1f8ff;
+    border:1px solid #d8e8fb;
+    border-left:5px solid var(--primary);
+    border-radius:14px;
+    padding:14px;
+    line-height:1.6;
+  }
+
+  .summary-box{
+    background:#fffdfa;
+    border:1px solid #fde7b1;
+    border-radius:14px;
+    padding:12px 14px;
+    line-height:1.55;
+    color:#6e5420;
+  }
+
+  .nav-row{
+    display:flex;
+    justify-content:space-between;
+    gap:8px;
+    margin-top:auto;
+  }
+
+  .pill{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:6px 10px;
+    border-radius:999px;
+    background:#eef5ff;
+    border:1px solid #dbe7fb;
+    color:var(--primary);
+    font-size:.82rem;
+    font-weight:800;
+  }
+
+  .small{
+    font-size:.84rem;
+    color:var(--sub);
+  }
+
+  .toast-wrap{
+    position:fixed;
+    z-index:9999;
+    right:12px;
+    bottom:calc(12px + env(safe-area-inset-bottom));
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:8px;
+    pointer-events:none;
+  }
+
+  .toast{
+    min-width:230px;
+    max-width:min(92vw, 380px);
+    background:#213552;
+    color:#fff;
+    border-radius:14px;
+    padding:12px 14px;
+    box-shadow:0 12px 28px rgba(12,23,42,.24);
+    opacity:0;
+    transform:translateY(12px);
+    animation:toastIn .22s ease forwards;
+    font-size:.92rem;
+    line-height:1.45;
+  }
+
+  .toast.success{ background:#1f7d53; }
+  .toast.warn{ background:#a74a42; }
+  .toast.info{ background:#214a88; }
+
+  @keyframes toastIn{
+    to{ opacity:1; transform:translateY(0); }
+  }
+  @keyframes toastOut{
+    to{ opacity:0; transform:translateY(12px); }
+  }
+
+  .fit-text{
+    overflow:hidden;
+  }
+
+  .footer-note{
+    padding:0 14px 14px;
+    color:var(--sub);
+    font-size:.84rem;
+    line-height:1.45;
+  }
+
+  @media (max-width: 1160px){
+    .right-col{
+      width:340px;
+      min-width:300px;
+    }
+    .bottom-info{
+      grid-template-columns:1fr;
+    }
+  }
+
+  @media (max-width: 1024px){
+    .main{
+      flex-direction:column;
+    }
+    .right-col{
+      width:auto;
+      min-width:0;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+    .mission-panel{
+      min-height:280px;
+    }
+    .controls-panel{
+      min-height:280px;
+    }
+  }
+
+  @media (max-width: 767px){
+    html,body{
+      overflow:auto;
+    }
+    .app{
+      height:auto;
+      min-height:100dvh;
+    }
+    .topbar{
+      flex-direction:column;
+      align-items:flex-start;
+      min-height:auto;
+    }
+    .topbar-side{
+      width:100%;
+      min-width:0;
+      align-items:flex-start;
+    }
+    .right-col{
+      grid-template-columns:1fr;
+    }
+    .sim-canvas-wrap{
+      min-height:360px;
+    }
+    .btn-row{
+      grid-template-columns:1fr;
+    }
+    .row{
+      flex-wrap:wrap;
+    }
+    .label{
+      min-width:80px;
+    }
+    .bottom-info{
+      grid-template-columns:1fr;
+    }
+    .legend{
+      max-width:100%;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="title-wrap">
+      <h1 class="title fit-text">자유 낙하 운동 실험실</h1>
+      <p class="subtitle fit-text">
+        질량, 높이, 공기 저항, 행성을 바꾸며 두 물체의 낙하를 비교해 보세요.
+        관찰한 결과를 바탕으로 퀴즈를 풀며 핵심 개념을 스스로 발견할 수 있습니다.
+      </p>
+    </div>
+    <div class="topbar-side">
+      <div class="stage-badge" id="stageBadge">현재 단계: Step 1. 예상하기</div>
+      <div class="progress-row">
+        <div class="progress-bar" aria-hidden="true">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">1 / 9</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="left-col">
+      <section class="panel sim-panel">
+        <div class="panel-header">
+          <h2 class="panel-title">Canvas 실험 영역</h2>
+          <span class="hint">물체를 직접 드래그해서 시작 높이를 바꿀 수 있어요.</span>
+        </div>
+
+        <div class="sim-canvas-wrap">
+          <canvas id="simCanvas"></canvas>
+          <div class="sim-overlay">
+            <div class="legend mini-chip">
+              <div class="legend-item"><span class="dot" style="background:#2b6de4"></span>물체 A</div>
+              <div class="legend-item"><span class="dot" style="background:#ef5350"></span>물체 B</div>
+              <div class="legend-item"><span class="dot" style="background:#7f8fa6"></span>잔상</div>
+            </div>
+            <div class="mini-chip" id="canvasHintChip">
+              상태: 대기 중
+            </div>
+          </div>
+        </div>
+
+        <div class="bottom-info">
+          <div class="metric-card">
+            <div class="metric-title">물체 A</div>
+            <div class="metric-main" id="metricA">속력 0.00 m/s</div>
+            <div class="metric-sub" id="metricADetail">낙하 거리 0.00 m · 도착 시간 -</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-title">물체 B</div>
+            <div class="metric-main" id="metricB">속력 0.00 m/s</div>
+            <div class="metric-sub" id="metricBDetail">낙하 거리 0.00 m · 도착 시간 -</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-title">실험 결과 요약</div>
+            <div class="metric-main" id="metricSummary">아직 실험 전이에요.</div>
+            <div class="metric-sub" id="metricSummaryDetail">조건을 설정한 뒤 시작 버튼을 눌러 보세요.</div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <aside class="right-col">
+      <section class="panel controls-panel">
+        <div class="panel-header">
+          <h2 class="panel-title">조작 패널</h2>
+          <span class="hint">실험 조건을 직접 바꿔 보세요.</span>
+        </div>
+        <div class="controls-body">
+          <div class="group">
+            <h3 class="group-title">기본 조건</h3>
+            <div class="row">
+              <div class="label">낙하 높이</div>
+              <div class="grow"><input id="heightRange" type="range" min="5" max="50" step="1" value="20" /></div>
+              <div class="value" id="heightValue">20 m</div>
+            </div>
+            <div class="row">
+              <div class="label">행성 선택</div>
+              <div class="grow">
+                <select id="planetSelect">
+                  <option value="earth">지구</option>
+                  <option value="moon">달</option>
+                  <option value="mars">화성</option>
+                  <option value="jupiter">목성</option>
+                </select>
+              </div>
+            </div>
+            <div class="toggle-line">
+              <div class="label">공기 저항</div>
+              <div class="toggle-box" role="group" aria-label="공기 저항 선택">
+                <button type="button" class="toggle-btn active" id="airOffBtn">OFF</button>
+                <button type="button" class="toggle-btn" id="airOnBtn">ON</button>
+              </div>
+            </div>
+            <div class="toggle-line" style="margin-top:10px;">
+              <div class="label">사운드</div>
+              <div class="toggle-box" role="group" aria-label="사운드 선택">
+                <button type="button" class="toggle-btn active" id="soundOnBtn">ON</button>
+                <button type="button" class="toggle-btn" id="soundOffBtn">OFF</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="group">
+            <h3 class="group-title">물체 A 조건</h3>
+            <div class="row">
+              <div class="label">질량</div>
+              <div class="grow"><input id="massARange" type="range" min="0.2" max="10" step="0.1" value="1.0" /></div>
+              <div class="value" id="massAValue">1.0 kg</div>
+            </div>
+            <div class="row">
+              <div class="label">물체 종류</div>
+              <div class="grow">
+                <select id="typeASelect">
+                  <option value="steel">쇠구슬</option>
+                  <option value="wood">나무공</option>
+                  <option value="rubber">고무공</option>
+                  <option value="paper">종이 뭉치</option>
+                  <option value="feather">깃털</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="group">
+            <h3 class="group-title">물체 B 조건</h3>
+            <div class="row">
+              <div class="label">질량</div>
+              <div class="grow"><input id="massBRange" type="range" min="0.2" max="10" step="0.1" value="5.0" /></div>
+              <div class="value" id="massBValue">5.0 kg</div>
+            </div>
+            <div class="row">
+              <div class="label">물체 종류</div>
+              <div class="grow">
+                <select id="typeBSelect">
+                  <option value="steel">쇠구슬</option>
+                  <option value="wood">나무공</option>
+                  <option value="rubber">고무공</option>
+                  <option value="paper">종이 뭉치</option>
+                  <option value="feather">깃털</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="group">
+            <h3 class="group-title">실험 제어</h3>
+            <div class="btn-row">
+              <button class="btn-primary" id="startBtn">실험 시작</button>
+              <button class="btn-secondary" id="pauseBtn">일시정지</button>
+              <button class="btn-danger" id="resetBtn">초기화</button>
+            </div>
+          </div>
+
+          <div class="group">
+            <h3 class="group-title">현재 실험 상태</h3>
+            <div class="status-grid">
+              <div class="status-card">
+                <strong>경과 시간</strong>
+                <span id="statusTime">0.00 s</span>
+              </div>
+              <div class="status-card">
+                <strong>중력 가속도</strong>
+                <span id="statusGravity">9.8 m/s²</span>
+              </div>
+              <div class="status-card">
+                <strong>현재 행성</strong>
+                <span id="statusPlanet">지구</span>
+              </div>
+              <div class="status-card">
+                <strong>실험 상태</strong>
+                <span id="statusState">대기 중</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="footer-note">
+          팁: 질량의 영향만 확인하고 싶다면 <strong>높이·행성·공기 저항 조건을 같게</strong> 두고 질량만 바꿔 보세요.
+        </div>
+      </section>
+
+      <section class="panel mission-panel">
+        <div class="panel-header">
+          <h2 class="panel-title">미션 / 퀴즈</h2>
+          <span class="pill" id="missionPill">진행 중</span>
+        </div>
+        <div class="mission-body" id="missionBody"></div>
+      </section>
+    </aside>
+  </main>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+(() => {
+  "use strict";
+
+  /* =========================
+     기본 요소 참조
+  ========================= */
+  const canvas = document.getElementById("simCanvas");
+  const ctx = canvas.getContext("2d");
+
+  const els = {
+    stageBadge: document.getElementById("stageBadge"),
+    progressFill: document.getElementById("progressFill"),
+    progressText: document.getElementById("progressText"),
+    missionBody: document.getElementById("missionBody"),
+    missionPill: document.getElementById("missionPill"),
+    canvasHintChip: document.getElementById("canvasHintChip"),
+
+    heightRange: document.getElementById("heightRange"),
+    heightValue: document.getElementById("heightValue"),
+    massARange: document.getElementById("massARange"),
+    massAValue: document.getElementById("massAValue"),
+    massBRange: document.getElementById("massBRange"),
+    massBValue: document.getElementById("massBValue"),
+    typeASelect: document.getElementById("typeASelect"),
+    typeBSelect: document.getElementById("typeBSelect"),
+    planetSelect: document.getElementById("planetSelect"),
+    airOffBtn: document.getElementById("airOffBtn"),
+    airOnBtn: document.getElementById("airOnBtn"),
+    soundOnBtn: document.getElementById("soundOnBtn"),
+    soundOffBtn: document.getElementById("soundOffBtn"),
+    startBtn: document.getElementById("startBtn"),
+    pauseBtn: document.getElementById("pauseBtn"),
+    resetBtn: document.getElementById("resetBtn"),
+
+    metricA: document.getElementById("metricA"),
+    metricADetail: document.getElementById("metricADetail"),
+    metricB: document.getElementById("metricB"),
+    metricBDetail: document.getElementById("metricBDetail"),
+    metricSummary: document.getElementById("metricSummary"),
+    metricSummaryDetail: document.getElementById("metricSummaryDetail"),
+
+    statusTime: document.getElementById("statusTime"),
+    statusGravity: document.getElementById("statusGravity"),
+    statusPlanet: document.getElementById("statusPlanet"),
+    statusState: document.getElementById("statusState"),
+
+    toastWrap: document.getElementById("toastWrap")
+  };
+
+  /* =========================
+     상수 / 데이터
+  ========================= */
+  const planetMap = {
+    earth: { name: "지구", g: 9.8, color: "#2b6de4" },
+    moon: { name: "달", g: 1.62, color: "#7f8fa6" },
+    mars: { name: "화성", g: 3.71, color: "#d1664e" },
+    jupiter: { name: "목성", g: 24.79, color: "#8b5b41" }
+  };
+
+  const objectTypes = {
+    steel: {
+      name: "쇠구슬",
+      color: "#2b6de4",
+      areaFactor: 0.8,
+      radiusPx: 14,
+      shape: "circle"
+    },
+    wood: {
+      name: "나무공",
+      color: "#bb7b35",
+      areaFactor: 1.0,
+      radiusPx: 15,
+      shape: "circle"
+    },
+    rubber: {
+      name: "고무공",
+      color: "#1fa57a",
+      areaFactor: 0.95,
+      radiusPx: 15,
+      shape: "circle"
+    },
+    paper: {
+      name: "종이 뭉치",
+      color: "#f0b541",
+      areaFactor: 1.5,
+      radiusPx: 16,
+      shape: "paper"
+    },
+    feather: {
+      name: "깃털",
+      color: "#ef5350",
+      areaFactor: 3.8,
+      radiusPx: 18,
+      shape: "feather"
+    }
+  };
+
+  const appState = {
+    config: {
+      startHeight: 20,
+      planet: "earth",
+      airResistance: false,
+      soundOn: true
+    },
+    sim: {
+      running: false,
+      paused: false,
+      experimentStarted: false,
+      finished: false,
+      elapsed: 0,
+      lastTimestamp: 0,
+      timeScale: 1,
+      hasRun: false,
+      hasDragged: false
+    },
+    layout: {
+      dpr: Math.max(1, Math.min(window.devicePixelRatio || 1, 2)),
+      w: 0,
+      h: 0,
+      paddingTop: 28,
+      paddingBottom: 40,
+      paddingLeft: 64,
+      paddingRight: 64,
+      groundY: 0,
+      topY: 0,
+      pxPerMeter: 1
+    },
+    drag: {
+      active: false,
+      targetLabel: null
+    },
+    lesson: {
+      stepIndex: 0,
+      answered: {},
+      predictChoice: null
+    },
+    objects: [
+      {
+        label: "A",
+        mass: 1.0,
+        type: "steel",
+        currentHeight: 20,
+        startHeight: 20,
+        velocity: 0,
+        distance: 0,
+        acceleration: 0,
+        landed: false,
+        landingTime: null,
+        trail: []
+      },
+      {
+        label: "B",
+        mass: 5.0,
+        type: "feather",
+        currentHeight: 20,
+        startHeight: 20,
+        velocity: 0,
+        distance: 0,
+        acceleration: 0,
+        landed: false,
+        landingTime: null,
+        trail: []
+      }
+    ],
+    lastRun: null
+  };
+
+  const lessonSteps = [
+    {
+      type: "predict",
+      title: "Step 1. 예상하기",
+      desc: "질량이 다른 두 물체를 같은 높이에서 떨어뜨리면 어떻게 될지 먼저 예상해 보세요.",
+      question: "공기 저항이 없을 때, 무거운 공과 가벼운 공을 같은 높이에서 동시에 떨어뜨리면 어떻게 될까요?",
+      choices: [
+        "무거운 공이 먼저 도착한다.",
+        "가벼운 공이 먼저 도착한다.",
+        "두 공이 거의 동시에 도착한다."
+      ],
+      correct: 2,
+      explanation: "자유 낙하 운동에서는 공기 저항을 무시하면 질량이 달라도 같은 중력 가속도를 받아 거의 동시에 떨어집니다."
+    },
+    {
+      type: "experiment",
+      title: "Step 2. 실험하기",
+      desc: "오른쪽에서 질량, 물체 종류, 높이, 공기 저항, 행성을 조절한 뒤 실험 시작 버튼을 눌러 보세요.",
+      question: "추천 실험: 공기 저항 OFF, 같은 높이, 질량만 다르게 설정하고 비교해 보세요.",
+      explanation: "실험을 한 번이라도 실행하면 다음 단계로 넘어갈 수 있어요."
+    },
+    {
+      type: "observe",
+      title: "Step 3. 관찰하기",
+      desc: "방금 실험한 결과를 바탕으로 가장 알맞은 설명을 골라 보세요.",
+      question: "두 물체의 도착 시간은 어떻게 나타났나요?",
+      choices: [
+        "물체 A가 더 먼저 도착했다.",
+        "물체 B가 더 먼저 도착했다.",
+        "두 물체가 거의 동시에 도착했다."
+      ],
+      explanation: "실제 선택한 조건에 따라 결과가 달라질 수 있어요. 공기 저항이 없고 시작 높이가 같다면 보통 동시에 도착합니다."
+    },
+    {
+      type: "concept",
+      title: "Step 4. 개념 발견하기",
+      desc: "실험 결과를 바탕으로 자유 낙하 운동의 핵심 개념을 정리해 봅시다.",
+      concept: [
+        "자유 낙하 운동은 중력 때문에 물체가 아래 방향으로 점점 빨라지는 운동입니다.",
+        "공기 저항을 무시하면 질량이 달라도 같은 높이에서 동시에 떨어집니다.",
+        "낙하 시간이 길어질수록 속력은 커지고, 같은 시간 동안 이동한 거리는 점점 더 커집니다.",
+        "같은 행성에서는 중력 가속도가 일정하므로, 낙하하는 동안 가속도는 일정하다고 볼 수 있습니다."
+      ]
+    },
+    {
+      type: "quiz",
+      title: "Quiz 1. 결과 해석하기",
+      desc: "관찰한 내용을 바탕으로 개념을 확인해 봅시다.",
+      question: "두 물체의 질량이 다른데도 도착 시간이 같았던 까닭으로 알맞은 것은?",
+      choices: [
+        "무거운 물체는 중력을 거의 받지 않기 때문이다.",
+        "공기 저항이 없으면 질량이 달라도 같은 가속도로 떨어지기 때문이다.",
+        "가벼운 물체는 아래로 힘을 받지 않기 때문이다.",
+        "낙하하는 동안 속력이 항상 같기 때문이다."
+      ],
+      correct: 1,
+      explanation: "공기 저항을 무시하면 질량과 관계없이 같은 중력 가속도로 떨어집니다."
+    },
+    {
+      type: "quiz",
+      title: "Quiz 2. 속력 변화",
+      desc: "속력 변화를 바르게 이해했는지 확인해 봅시다.",
+      question: "자유 낙하하는 물체의 속력은 시간이 지날수록 어떻게 변하나요?",
+      choices: [
+        "점점 감소한다.",
+        "항상 일정하다.",
+        "점점 증가한다.",
+        "처음만 증가하고 곧 0이 된다."
+      ],
+      correct: 2,
+      explanation: "중력 때문에 아래 방향으로 점점 빨라지므로 속력은 시간이 갈수록 증가합니다."
+    },
+    {
+      type: "quiz",
+      title: "Quiz 3. 변인 통제",
+      desc: "공정한 실험을 위해 어떤 조건을 같게 해야 하는지 생각해 보세요.",
+      question: "질량의 영향만 확인하려면 어떤 조건을 같게 해야 할까요?",
+      choices: [
+        "높이는 다르게 하고 질량은 같게 한다.",
+        "높이와 공기 저항 조건을 같게 하고 질량만 다르게 한다.",
+        "행성과 높이를 모두 다르게 한다.",
+        "떨어뜨리는 시점만 다르게 한다."
+      ],
+      correct: 1,
+      explanation: "한 가지 변인의 영향만 확인하려면 나머지 조건은 같게 두어야 합니다."
+    },
+    {
+      type: "quiz",
+      title: "Quiz 4. 행성 비교",
+      desc: "행성에 따른 중력의 차이도 적용해 봅시다.",
+      question: "달에서 같은 높이에서 물체를 떨어뜨리면 지구와 비교해 어떤 점이 달라질까요?",
+      choices: [
+        "달에서는 중력이 더 약해 더 천천히 떨어진다.",
+        "달에서는 중력이 없어 전혀 떨어지지 않는다.",
+        "달에서는 무거운 물체만 떨어진다.",
+        "달에서는 속력이 처음부터 일정하다."
+      ],
+      correct: 0,
+      explanation: "달에도 중력이 있지만 지구보다 약하기 때문에 같은 높이에서는 더 천천히 떨어집니다."
+    },
+    {
+      type: "quiz",
+      title: "Quiz 5. 거리 변화",
+      desc: "잔상 간격과 낙하 거리의 변화를 떠올려 보세요.",
+      question: "자유 낙하 중 같은 시간 간격마다 이동한 거리가 점점 커지는 까닭은 무엇일까요?",
+      choices: [
+        "물체가 위로 가속되기 때문이다.",
+        "시간이 갈수록 속력이 커지기 때문이다.",
+        "중력이 점점 사라지기 때문이다.",
+        "질량이 점점 줄어들기 때문이다."
+      ],
+      correct: 1,
+      explanation: "속력이 점점 커지기 때문에 같은 시간 동안 이동하는 거리도 점점 커집니다."
+    }
+  ];
+
+  /* =========================
+     오디오 관리자
+  ========================= */
+  const audioManager = {
+    ctx: null,
+    master: null,
+    ready: false,
+    init() {
+      if (this.ready) return;
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      this.ctx = new AudioCtx();
+      this.master = this.ctx.createGain();
+      this.master.gain.value = 0.18;
+      this.master.connect(this.ctx.destination);
+      this.ready = true;
+    },
+    resume() {
+      if (!appState.config.soundOn) return;
+      this.init();
+      if (this.ctx && this.ctx.state === "suspended") this.ctx.resume();
+    },
+    tone({
+      type = "sine",
+      freq = 440,
+      start = 0,
+      duration = 0.12,
+      attack = 0.01,
+      decay = 0.04,
+      sustain = 0.65,
+      release = 0.06,
+      volume = 0.6,
+      detune = 0,
+      filter = null
+    } = {}) {
+      if (!appState.config.soundOn) return;
+      this.resume();
+      if (!this.ctx) return;
+
+      const now = this.ctx.currentTime + start;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = type;
+      osc.frequency.value = freq;
+      osc.detune.value = detune;
+
+      let source = osc;
+      if (filter) {
+        const biquad = this.ctx.createBiquadFilter();
+        biquad.type = filter.type || "lowpass";
+        biquad.frequency.value = filter.frequency || 1200;
+        biquad.Q.value = filter.Q || 0.7;
+        osc.connect(biquad);
+        source = biquad;
+      }
+
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.linearRampToValueAtTime(volume, now + attack);
+      gain.gain.linearRampToValueAtTime(volume * sustain, now + attack + decay);
+      gain.gain.setValueAtTime(volume * sustain, now + Math.max(attack + decay, duration - release));
+      gain.gain.linearRampToValueAtTime(0.0001, now + duration);
+
+      source.connect(gain);
+      gain.connect(this.master);
+
+      osc.start(now);
+      osc.stop(now + duration + 0.03);
+    },
+    play(type) {
+      if (!appState.config.soundOn) return;
+      switch (type) {
+        case "click":
+          this.tone({ type:"triangle", freq:580, duration:0.08, volume:0.22 });
+          break;
+        case "start":
+          this.tone({ type:"triangle", freq:392, duration:0.10, volume:0.20 });
+          this.tone({ type:"triangle", freq:523, start:0.07, duration:0.16, volume:0.22 });
+          break;
+        case "fall":
+          this.tone({ type:"sine", freq:240, duration:0.15, volume:0.14, filter:{type:"lowpass", frequency:900} });
+          break;
+        case "landing":
+          this.tone({ type:"square", freq:160, duration:0.09, volume:0.17 });
+          this.tone({ type:"triangle", freq:120, start:0.04, duration:0.12, volume:0.12 });
+          break;
+        case "correct":
+          this.tone({ type:"triangle", freq:523, duration:0.11, volume:0.22 });
+          this.tone({ type:"triangle", freq:659, start:0.08, duration:0.13, volume:0.23 });
+          break;
+        case "wrong":
+          this.tone({ type:"square", freq:340, duration:0.10, volume:0.16 });
+          this.tone({ type:"square", freq:240, start:0.08, duration:0.13, volume:0.16 });
+          break;
+        case "mission":
+          this.tone({ type:"triangle", freq:440, duration:0.08, volume:0.18 });
+          this.tone({ type:"triangle", freq:554, start:0.06, duration:0.09, volume:0.18 });
+          this.tone({ type:"triangle", freq:659, start:0.12, duration:0.11, volume:0.18 });
+          break;
+        case "step":
+          this.tone({ type:"sine", freq:392, duration:0.07, volume:0.15 });
+          break;
+        case "toast":
+          this.tone({ type:"triangle", freq:700, duration:0.07, volume:0.13 });
+          break;
+        case "reset":
+          this.tone({ type:"triangle", freq:520, duration:0.06, volume:0.14 });
+          this.tone({ type:"triangle", freq:390, start:0.05, duration:0.10, volume:0.14 });
+          break;
+        case "pause":
+          this.tone({ type:"square", freq:280, duration:0.05, volume:0.11 });
+          this.tone({ type:"square", freq:280, start:0.07, duration:0.05, volume:0.11 });
+          break;
+        case "pick":
+          this.tone({ type:"triangle", freq:760, duration:0.06, volume:0.15 });
+          break;
+      }
+    }
+  };
+
+  /* =========================
+     유틸 함수
+  ========================= */
+  function clamp(v, min, max) {
+    return Math.max(min, Math.min(max, v));
+  }
+
+  function round(value, digits = 2) {
+    return Number(value).toFixed(digits);
+  }
+
+  function showToast(message, type = "info", duration = 2200) {
+    const toast = document.createElement("div");
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    els.toastWrap.appendChild(toast);
+    audioManager.play("toast");
+    setTimeout(() => {
+      toast.style.animation = "toastOut .22s ease forwards";
+      setTimeout(() => toast.remove(), 250);
+    }, duration);
+  }
+
+  function autoFitText(root = document) {
+    const targets = root.querySelectorAll(".fit-text");
+    targets.forEach(el => {
+      if (!el.dataset.baseSize) {
+        el.dataset.baseSize = parseFloat(getComputedStyle(el).fontSize);
+      }
+      const base = parseFloat(el.dataset.baseSize);
+      let size = base;
+      el.style.fontSize = base + "px";
+      while ((el.scrollHeight > el.clientHeight || el.scrollWidth > el.clientWidth) && size > 12) {
+        size -= 1;
+        el.style.fontSize = size + "px";
+      }
+    });
+  }
+
+  function getGravityValue() {
+    return planetMap[appState.config.planet].g;
+  }
+
+  function getPlanetName() {
+    return planetMap[appState.config.planet].name;
+  }
+
+  function getObjectMeta(type) {
+    return objectTypes[type] || objectTypes.steel;
+  }
+
+  function getObjectColor(obj) {
+    return obj.label === "A" ? "#2b6de4" : "#ef5350";
+  }
+
+  function getObjectName(obj) {
+    return getObjectMeta(obj.type).name;
+  }
+
+  function currentExperimentStateLabel() {
+    if (appState.sim.running) return "실험 중";
+    if (appState.sim.paused && appState.sim.experimentStarted) return "일시정지";
+    if (appState.sim.finished) return "실험 완료";
+    return "대기 중";
+  }
+
+  function updateTopLabels() {
+    const step = lessonSteps[appState.lesson.stepIndex];
+    els.stageBadge.textContent = `현재 단계: ${step.title}`;
+    const progress = ((appState.lesson.stepIndex + 1) / lessonSteps.length) * 100;
+    els.progressFill.style.width = `${progress}%`;
+    els.progressText.textContent = `${appState.lesson.stepIndex + 1} / ${lessonSteps.length}`;
+  }
+
+  function updateStatusPanel() {
+    els.statusTime.textContent = `${round(appState.sim.elapsed, 2)} s`;
+    els.statusGravity.textContent = `${round(getGravityValue(), 2)} m/s²`;
+    els.statusPlanet.textContent = getPlanetName();
+    els.statusState.textContent = currentExperimentStateLabel();
+    els.canvasHintChip.textContent = `상태: ${currentExperimentStateLabel()}`;
+  }
+
+  function updateControlValues() {
+    els.heightValue.textContent = `${appState.config.startHeight} m`;
+    els.massAValue.textContent = `${round(appState.objects[0].mass, 1)} kg`;
+    els.massBValue.textContent = `${round(appState.objects[1].mass, 1)} kg`;
+    updateStatusPanel();
+
+    els.airOffBtn.classList.toggle("active", !appState.config.airResistance);
+    els.airOnBtn.classList.toggle("active", appState.config.airResistance);
+    els.soundOnBtn.classList.toggle("active", appState.config.soundOn);
+    els.soundOffBtn.classList.toggle("active", !appState.config.soundOn);
+  }
+
+  function updateMetrics() {
+    const A = appState.objects[0];
+    const B = appState.objects[1];
+
+    els.metricA.textContent = `${getObjectName(A)} · 속력 ${round(A.velocity, 2)} m/s`;
+    els.metricADetail.textContent = `낙하 거리 ${round(A.distance, 2)} m · 도착 시간 ${A.landingTime !== null ? round(A.landingTime, 2) + " s" : "-"}`;
+
+    els.metricB.textContent = `${getObjectName(B)} · 속력 ${round(B.velocity, 2)} m/s`;
+    els.metricBDetail.textContent = `낙하 거리 ${round(B.distance, 2)} m · 도착 시간 ${B.landingTime !== null ? round(B.landingTime, 2) + " s" : "-"}`;
+
+    if (!appState.lastRun) {
+      els.metricSummary.textContent = "아직 실험 전이에요.";
+      els.metricSummaryDetail.textContent = "조건을 설정한 뒤 시작 버튼을 눌러 보세요.";
+      return;
+    }
+
+    els.metricSummary.textContent = appState.lastRun.summaryTitle;
+    els.metricSummaryDetail.textContent = appState.lastRun.summaryDetail;
+  }
+
+  /* =========================
+     캔버스 / 레이아웃
+  ========================= */
+  function resizeCanvas() {
+    const rect = canvas.getBoundingClientRect();
+    appState.layout.dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
+    appState.layout.w = Math.max(300, Math.floor(rect.width));
+    appState.layout.h = Math.max(280, Math.floor(rect.height));
+    canvas.width = appState.layout.w * appState.layout.dpr;
+    canvas.height = appState.layout.h * appState.layout.dpr;
+    ctx.setTransform(appState.layout.dpr, 0, 0, appState.layout.dpr, 0, 0);
+
+    const { h } = appState.layout;
+    appState.layout.topY = appState.layout.paddingTop;
+    appState.layout.groundY = h - appState.layout.paddingBottom;
+    appState.layout.pxPerMeter = (appState.layout.groundY - appState.layout.topY) / 52;
+
+    drawScene();
+    autoFitText();
+  }
+
+  function heightToCanvasY(heightMeters) {
+    return appState.layout.groundY - heightMeters * appState.layout.pxPerMeter;
+  }
+
+  function objectCanvasX(label) {
+    const center = appState.layout.w / 2;
+    return label === "A" ? center - 70 : center + 70;
+  }
+
+  function objectCanvasY(obj) {
+    return heightToCanvasY(obj.currentHeight);
+  }
+
+  function drawBackground() {
+    const w = appState.layout.w;
+    const h = appState.layout.h;
+
+    // 격자 배경
+    ctx.save();
+    ctx.fillStyle = "#f9fbff";
+    ctx.fillRect(0, 0, w, h);
+
+    ctx.strokeStyle = "rgba(62,110,188,.08)";
+    ctx.lineWidth = 1;
+    for (let y = appState.layout.topY; y < appState.layout.groundY; y += 28) {
+      ctx.beginPath();
+      ctx.moveTo(appState.layout.paddingLeft - 18, y);
+      ctx.lineTo(w - appState.layout.paddingRight + 18, y);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // 높이 눈금
+    ctx.save();
+    ctx.strokeStyle = "#9eb6d8";
+    ctx.fillStyle = "#466282";
+    ctx.lineWidth = 1.25;
+    const rulerX = appState.layout.paddingLeft - 20;
+    ctx.beginPath();
+    ctx.moveTo(rulerX, appState.layout.topY);
+    ctx.lineTo(rulerX, appState.layout.groundY);
+    ctx.stroke();
+
+    for (let m = 0; m <= 50; m += 5) {
+      const y = heightToCanvasY(m);
+      const tick = (m % 10 === 0) ? 14 : 8;
+      ctx.beginPath();
+      ctx.moveTo(rulerX - tick, y);
+      ctx.lineTo(rulerX, y);
+      ctx.stroke();
+      ctx.font = "12px sans-serif";
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+      ctx.fillText(`${m}m`, rulerX - 18, y);
+    }
+    ctx.restore();
+
+    // 시작선 표시
+    ctx.save();
+    const sy = heightToCanvasY(appState.config.startHeight);
+    ctx.strokeStyle = "rgba(43,109,228,.30)";
+    ctx.setLineDash([6, 6]);
+    ctx.beginPath();
+    ctx.moveTo(appState.layout.paddingLeft + 10, sy);
+    ctx.lineTo(w - appState.layout.paddingRight - 10, sy);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = "#2b6de4";
+    ctx.font = "bold 12px sans-serif";
+    ctx.fillText("시작 높이", appState.layout.paddingLeft + 14, sy - 8);
+    ctx.restore();
+
+    // 바닥
+    ctx.save();
+    const groundY = appState.layout.groundY;
+    const grad = ctx.createLinearGradient(0, groundY - 10, 0, groundY + 22);
+    grad.addColorStop(0, "#aec7eb");
+    grad.addColorStop(1, "#7797c5");
+    ctx.fillStyle = grad;
+    ctx.fillRect(appState.layout.paddingLeft - 30, groundY, w - (appState.layout.paddingLeft + appState.layout.paddingRight) + 60, 20);
+    ctx.fillStyle = "#38567a";
+    ctx.font = "bold 12px sans-serif";
+    ctx.fillText("바닥", w - appState.layout.paddingRight - 6, groundY + 14);
+    ctx.restore();
+  }
+
+  function drawTrails(obj) {
+    ctx.save();
+    obj.trail.forEach((t, idx) => {
+      const alpha = (idx + 1) / obj.trail.length * 0.25;
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = "#7f8fa6";
+      ctx.beginPath();
+      ctx.arc(t.x, t.y, 5, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.restore();
+  }
+
+  function drawVelocityArrow(obj) {
+    const x = objectCanvasX(obj.label);
+    const y = objectCanvasY(obj);
+    const arrowLen = clamp(16 + obj.velocity * 2.1, 16, 64);
+
+    ctx.save();
+    ctx.strokeStyle = getObjectColor(obj);
+    ctx.fillStyle = getObjectColor(obj);
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x + 28, y);
+    ctx.lineTo(x + 28, y + arrowLen);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(x + 28, y + arrowLen);
+    ctx.lineTo(x + 24, y + arrowLen - 8);
+    ctx.lineTo(x + 32, y + arrowLen - 8);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.font = "bold 12px sans-serif";
+    ctx.fillText(`${round(obj.velocity,1)} m/s`, x + 36, y + Math.min(arrowLen, 26));
+    ctx.restore();
+  }
+
+  function drawObject(obj) {
+    const x = objectCanvasX(obj.label);
+    const y = objectCanvasY(obj);
+    const meta = getObjectMeta(obj.type);
+    const baseColor = getObjectColor(obj);
+
+    ctx.save();
+
+    // 라벨
+    ctx.fillStyle = "#203951";
+    ctx.font = "bold 14px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(`물체 ${obj.label}`, x, y - meta.radiusPx - 12);
+
+    // 그림자
+    ctx.fillStyle = "rgba(0,0,0,.10)";
+    ctx.beginPath();
+    ctx.ellipse(x, appState.layout.groundY + 4, 16, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 본체
+    if (meta.shape === "circle") {
+      const grad = ctx.createRadialGradient(x - 4, y - 5, 4, x, y, meta.radiusPx + 5);
+      grad.addColorStop(0, "#ffffff");
+      grad.addColorStop(0.18, baseColor);
+      grad.addColorStop(1, shadeColor(baseColor, -20));
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(x, y, meta.radiusPx, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(0,0,0,.12)";
+      ctx.stroke();
+    } else if (meta.shape === "paper") {
+      ctx.fillStyle = "#ffe2a6";
+      roundRect(ctx, x - 14, y - 14, 28, 28, 7, true, false);
+      ctx.strokeStyle = "#d79a26";
+      ctx.strokeRect(x - 14, y - 14, 28, 28);
+      ctx.strokeStyle = "#d79a26";
+      ctx.beginPath();
+      ctx.moveTo(x - 7, y - 5);
+      ctx.quadraticCurveTo(x, y + 6, x + 7, y - 1);
+      ctx.stroke();
+    } else if (meta.shape === "feather") {
+      ctx.strokeStyle = baseColor;
+      ctx.lineWidth = 2.3;
+      ctx.beginPath();
+      ctx.moveTo(x - 2, y - 16);
+      ctx.quadraticCurveTo(x + 8, y - 2, x - 1, y + 16);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(x - 2, y - 16);
+      ctx.quadraticCurveTo(x - 16, y - 6, x - 2, y + 2);
+      ctx.quadraticCurveTo(x - 17, y + 12, x - 1, y + 16);
+      ctx.stroke();
+      ctx.fillStyle = "rgba(239,83,80,.12)";
+      ctx.beginPath();
+      ctx.ellipse(x - 4, y, 12, 18, -0.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // 질량 표시
+    ctx.fillStyle = "#355677";
+    ctx.font = "12px sans-serif";
+    ctx.fillText(`${round(obj.mass,1)} kg`, x, y + meta.radiusPx + 16);
+    ctx.restore();
+
+    drawVelocityArrow(obj);
+  }
+
+  function drawHUD() {
+    const g = getGravityValue();
+    ctx.save();
+    const boxW = 190;
+    const boxH = 62;
+    const x = appState.layout.w - appState.layout.paddingRight - boxW + 22;
+    const y = appState.layout.topY + 10;
+    ctx.fillStyle = "rgba(255,255,255,.88)";
+    roundRect(ctx, x, y, boxW, boxH, 14, true, false);
+    ctx.strokeStyle = "#dce7fa";
+    ctx.stroke();
+
+    ctx.fillStyle = "#1e3957";
+    ctx.font = "bold 13px sans-serif";
+    ctx.fillText(`행성: ${getPlanetName()}`, x + 12, y + 20);
+    ctx.fillText(`중력 가속도: ${round(g,2)} m/s²`, x + 12, y + 39);
+    ctx.font = "12px sans-serif";
+    ctx.fillStyle = "#4c6785";
+    ctx.fillText(`공기 저항: ${appState.config.airResistance ? "ON" : "OFF"}`, x + 12, y + 56);
+    ctx.restore();
+  }
+
+  function drawScene() {
+    ctx.clearRect(0, 0, appState.layout.w, appState.layout.h);
+    drawBackground();
+
+    const A = appState.objects[0];
+    const B = appState.objects[1];
+
+    drawTrails(A);
+    drawTrails(B);
+    drawObject(A);
+    drawObject(B);
+    drawHUD();
+  }
+
+  function shadeColor(hex, percent) {
+    const num = parseInt(hex.replace("#",""), 16);
+    let r = (num >> 16) + percent;
+    let g = ((num >> 8) & 0x00FF) + percent;
+    let b = (num & 0x0000FF) + percent;
+    r = clamp(r, 0, 255);
+    g = clamp(g, 0, 255);
+    b = clamp(b, 0, 255);
+    return `rgb(${r},${g},${b})`;
+  }
+
+  function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+    const r = Math.min(radius, width / 2, height / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + width, y, x + width, y + height, r);
+    ctx.arcTo(x + width, y + height, x, y + height, r);
+    ctx.arcTo(x, y + height, x, y, r);
+    ctx.arcTo(x, y, x + width, y, r);
+    ctx.closePath();
+    if (fill) ctx.fill();
+    if (stroke) ctx.stroke();
+  }
+
+  /* =========================
+     물리 계산
+  ========================= */
+  function resetObjectsForRun() {
+    const startH = appState.config.startHeight;
+    appState.objects.forEach(obj => {
+      obj.startHeight = startH;
+      obj.currentHeight = startH;
+      obj.velocity = 0;
+      obj.distance = 0;
+      obj.acceleration = 0;
+      obj.landed = false;
+      obj.landingTime = null;
+      obj.trail = [];
+    });
+  }
+
+  function resetExperiment(showMsg = true) {
+    appState.sim.running = false;
+    appState.sim.paused = false;
+    appState.sim.experimentStarted = false;
+    appState.sim.finished = false;
+    appState.sim.elapsed = 0;
+    appState.sim.lastTimestamp = 0;
+
+    resetObjectsForRun();
+    updateStatusPanel();
+    updateMetrics();
+    drawScene();
+    if (showMsg) {
+      audioManager.play("reset");
+      showToast("실험을 초기화했어요.", "info");
+    }
+  }
+
+  function applyAirResistance(obj, g) {
+    // 중학생 수준에 맞춘 단순 모델
+    // 질량이 클수록 공기 저항 영향이 상대적으로 줄어들고
+    // 단면적(물체 종류)이 클수록 영향이 커지도록 설정
+    const areaFactor = getObjectMeta(obj.type).areaFactor;
+    const dragK = 0.07;
+    const dragAcc = dragK * areaFactor * obj.velocity * Math.abs(obj.velocity) / Math.max(0.2, obj.mass);
+    return Math.max(0, g - dragAcc);
+  }
+
+  function updatePhysics(dt) {
+    const g = getGravityValue();
+
+    appState.objects.forEach(obj => {
+      if (obj.landed) return;
+
+      let acc = g;
+      if (appState.config.airResistance) {
+        acc = applyAirResistance(obj, g);
+      }
+
+      obj.acceleration = acc;
+      obj.velocity += acc * dt;
+      obj.currentHeight -= obj.velocity * dt;
+      obj.currentHeight = Math.max(0, obj.currentHeight);
+      obj.distance = obj.startHeight - obj.currentHeight;
+
+      // 잔상 기록
+      const x = objectCanvasX(obj.label);
+      const y = objectCanvasY(obj);
+      if (!obj.trail.length || Math.hypot(obj.trail[obj.trail.length - 1].x - x, obj.trail[obj.trail.length - 1].y - y) > 16) {
+        obj.trail.push({ x, y });
+        if (obj.trail.length > 14) obj.trail.shift();
+      }
+
+      // 착지 판정
+      if (obj.currentHeight <= 0) {
+        obj.currentHeight = 0;
+        obj.velocity = 0;
+        obj.landed = true;
+        obj.landingTime = appState.sim.elapsed;
+        audioManager.play("landing");
+      }
+    });
+
+    if (appState.objects.every(o => o.landed)) {
+      finishExperiment();
+    }
+  }
+
+  function makeRunSummary() {
+    const A = appState.objects[0];
+    const B = appState.objects[1];
+    const diff = Math.abs((A.landingTime || 0) - (B.landingTime || 0));
+    let winner = "동시";
+    if (diff < 0.08) {
+      winner = "동시";
+    } else if ((A.landingTime || Infinity) < (B.landingTime || Infinity)) {
+      winner = "A";
+    } else {
+      winner = "B";
+    }
+
+    let title = "";
+    let detail = "";
+
+    if (winner === "동시") {
+      title = "두 물체가 거의 동시에 도착했어요.";
+    } else {
+      title = `물체 ${winner}가 더 먼저 도착했어요.`;
+    }
+
+    detail = `${getPlanetName()}에서 높이 ${appState.config.startHeight} m, 공기 저항 ${appState.config.airResistance ? "ON" : "OFF"} 조건으로 실험했습니다. `;
+    detail += `A(${getObjectName(A)}, ${round(A.mass,1)} kg)의 도착 시간은 ${round(A.landingTime || 0, 2)} s, `;
+    detail += `B(${getObjectName(B)}, ${round(B.mass,1)} kg)의 도착 시간은 ${round(B.landingTime || 0, 2)} s 입니다.`;
+
+    return {
+      title,
+      detail,
+      winner,
+      diff
+    };
+  }
+
+  function finishExperiment() {
+    if (appState.sim.finished) return;
+    appState.sim.running = false;
+    appState.sim.paused = false;
+    appState.sim.finished = true;
+    appState.sim.hasRun = true;
+
+    const summary = makeRunSummary();
+    appState.lastRun = {
+      summaryTitle: summary.title,
+      summaryDetail: summary.detail,
+      winner: summary.winner,
+      diff: summary.diff,
+      airResistance: appState.config.airResistance,
+      planet: appState.config.planet
+    };
+
+    updateMetrics();
+    updateStatusPanel();
+    drawScene();
+    showToast("실험이 완료되었어요. 결과를 확인해 보세요.", "success", 2600);
+    audioManager.play("mission");
+    renderStep(); // 관찰 단계라면 최신 결과 반영
+  }
+
+  function startExperiment() {
+    audioManager.resume();
+
+    if (appState.sim.running) {
+      showToast("이미 실험이 진행 중이에요.", "info");
+      return;
+    }
+
+    if (appState.sim.finished || !appState.sim.experimentStarted) {
+      resetExperiment(false);
+      appState.sim.experimentStarted = true;
+      appState.sim.finished = false;
+      appState.sim.elapsed = 0;
+    }
+
+    appState.sim.running = true;
+    appState.sim.paused = false;
+    appState.sim.lastTimestamp = performance.now();
+    updateStatusPanel();
+    audioManager.play("start");
+    audioManager.play("fall");
+    showToast("실험을 시작했어요.", "info");
+  }
+
+  function pauseExperiment() {
+    if (!appState.sim.running) {
+      showToast("현재 진행 중인 실험이 없어요.", "info");
+      return;
+    }
+    appState.sim.running = false;
+    appState.sim.paused = true;
+    updateStatusPanel();
+    audioManager.play("pause");
+    showToast("실험을 일시정지했어요.", "info");
+  }
+
+  function animationLoop(timestamp) {
+    if (appState.sim.running) {
+      const prev = appState.sim.lastTimestamp || timestamp;
+      let dt = (timestamp - prev) / 1000;
+      dt = Math.min(dt, 0.033);
+      appState.sim.lastTimestamp = timestamp;
+      appState.sim.elapsed += dt * appState.sim.timeScale;
+      updatePhysics(dt * appState.sim.timeScale);
+      updateMetrics();
+      updateStatusPanel();
+    }
+    drawScene();
+    requestAnimationFrame(animationLoop);
+  }
+
+  /* =========================
+     포인터 / 드래그
+  ========================= */
+  function getPointerPosition(event) {
+    const rect = canvas.getBoundingClientRect();
+    let clientX = 0;
+    let clientY = 0;
+    if (event.touches && event.touches[0]) {
+      clientX = event.touches[0].clientX;
+      clientY = event.touches[0].clientY;
+    } else {
+      clientX = event.clientX;
+      clientY = event.clientY;
+    }
+    return {
+      x: clientX - rect.left,
+      y: clientY - rect.top
+    };
+  }
+
+  function isNearObject(pos, obj) {
+    const x = objectCanvasX(obj.label);
+    const y = objectCanvasY(obj);
+    const r = getObjectMeta(obj.type).radiusPx + 12;
+    return Math.hypot(pos.x - x, pos.y - y) <= r;
+  }
+
+  function pointerDown(event) {
+    audioManager.resume();
+    if (appState.sim.running) return;
+    const pos = getPointerPosition(event);
+    for (const obj of appState.objects) {
+      if (isNearObject(pos, obj)) {
+        appState.drag.active = true;
+        appState.drag.targetLabel = obj.label;
+        appState.sim.hasDragged = true;
+        audioManager.play("pick");
+        showToast("드래그해서 시작 높이를 바꿀 수 있어요.", "info", 1500);
+        event.preventDefault();
+        return;
+      }
+    }
+  }
+
+  function pointerMove(event) {
+    if (!appState.drag.active) return;
+    const pos = getPointerPosition(event);
+    const meter = clamp((appState.layout.groundY - pos.y) / appState.layout.pxPerMeter, 0, 50);
+    appState.config.startHeight = Math.round(meter);
+    els.heightRange.value = appState.config.startHeight;
+    appState.objects.forEach(obj => {
+      obj.currentHeight = appState.config.startHeight;
+      obj.startHeight = appState.config.startHeight;
+      obj.distance = 0;
+      obj.velocity = 0;
+      obj.trail = [];
+    });
+    updateControlValues();
+    updateMetrics();
+    drawScene();
+    event.preventDefault();
+  }
+
+  function pointerUp() {
+    if (!appState.drag.active) return;
+    appState.drag.active = false;
+    appState.drag.targetLabel = null;
+    showToast(`시작 높이를 ${appState.config.startHeight} m로 설정했어요.`, "info", 1600);
+  }
+
+  /* =========================
+     미션 / 퀴즈 렌더링
+  ========================= */
+  function getObserveCorrectIndex() {
+    if (!appState.lastRun) return null;
+    if (appState.lastRun.winner === "동시") return 2;
+    if (appState.lastRun.winner === "A") return 0;
+    return 1;
+  }
+
+  function renderStep() {
+    const step = lessonSteps[appState.lesson.stepIndex];
+    updateTopLabels();
+    updateMissionPill();
+
+    let html = `
+      <div class="mission-card">
+        <p class="step-title fit-text">${step.title}</p>
+        <p class="step-desc">${step.desc}</p>
+      </div>
+    `;
+
+    if (step.type === "predict" || step.type === "quiz" || step.type === "observe") {
+      html += `
+        <div class="mission-card">
+          <p class="step-desc" style="font-weight:800; color:#17324d;">${step.question}</p>
+          ${step.type === "observe" && appState.lastRun ? `
+            <div class="summary-box" style="margin:10px 0 12px;">
+              <strong>방금 실험 결과</strong><br>
+              ${appState.lastRun.summaryTitle}<br>
+              <span class="small">${appState.lastRun.summaryDetail}</span>
+            </div>` : ""
+          }
+          ${step.type === "observe" && !appState.lastRun ? `
+            <div class="summary-box" style="margin:10px 0 12px;">
+              아직 실험 결과가 없어요. 먼저 Step 2에서 실험을 한 번 진행해 보세요.
+            </div>` : ""
+          }
+          <div class="choice-list">
+            ${(step.choices || []).map((choice, idx) => `
+              <button class="choice-btn" data-choice-index="${idx}">${idx + 1}. ${choice}</button>
+            `).join("")}
+          </div>
+        </div>
+        <div id="feedbackBox" class="feedback"></div>
+      `;
+    } else if (step.type === "experiment") {
+      html += `
+        <div class="mission-card">
+          <p class="step-desc">${step.question}</p>
+          <div class="summary-box" style="margin-top:12px;">
+            <strong>추천 활동</strong><br>
+            ① 공기 저항 OFF 상태에서 질량만 다르게 설정해 보기<br>
+            ② 공기 저항 ON 상태에서 쇠구슬과 깃털 비교하기<br>
+            ③ 행성을 달로 바꾸어 낙하 시간 비교하기
+          </div>
+          <p class="small" style="margin-top:10px;">실험을 1회 이상 완료하면 다음 단계로 이동할 수 있어요.</p>
+        </div>
+      `;
+    } else if (step.type === "concept") {
+      html += `
+        <div class="concept-box">
+          ${step.concept.map(line => `• ${line}`).join("<br>")}
+        </div>
+      `;
+      if (appState.lastRun) {
+        html += `
+          <div class="summary-box">
+            <strong>내 실험 결과 다시 보기</strong><br>
+            ${appState.lastRun.summaryTitle}<br>
+            <span class="small">${appState.lastRun.summaryDetail}</span>
+          </div>
+        `;
+      }
+    }
+
+    html += `
+      <div class="nav-row">
+        <button class="btn-ghost" id="prevStepBtn" ${appState.lesson.stepIndex === 0 ? "disabled" : ""}>이전 단계</button>
+        <button class="btn-primary" id="nextStepBtn">다음 단계</button>
+      </div>
+    `;
+
+    els.missionBody.innerHTML = html;
+
+    const nextBtn = document.getElementById("nextStepBtn");
+    const prevBtn = document.getElementById("prevStepBtn");
+
+    if (prevBtn) {
+      prevBtn.addEventListener("click", () => {
+        audioManager.play("step");
+        appState.lesson.stepIndex = Math.max(0, appState.lesson.stepIndex - 1);
+        renderStep();
+      });
+    }
+
+    if (nextBtn) {
+      nextBtn.addEventListener("click", () => {
+        const allow = canMoveNext(step);
+        if (!allow.ok) {
+          showToast(allow.message, "warn");
+          return;
+        }
+        audioManager.play("step");
+        if (appState.lesson.stepIndex < lessonSteps.length - 1) {
+          appState.lesson.stepIndex += 1;
+          renderStep();
+        } else {
+          showToast("모든 미션을 완료했어요. 잘했어요!", "success", 2600);
+          audioManager.play("mission");
+        }
+      });
+    }
+
+    // 선택형 단계 이벤트
+    els.missionBody.querySelectorAll("[data-choice-index]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        audioManager.play("click");
+        handleChoiceSubmit(Number(btn.dataset.choiceIndex));
+      });
+    });
+
+    autoFitText(els.missionBody);
+  }
+
+  function canMoveNext(step) {
+    const key = String(appState.lesson.stepIndex);
+    if (step.type === "predict" || step.type === "quiz" || step.type === "observe") {
+      if (!appState.lesson.answered[key]) {
+        return { ok:false, message:"먼저 답을 선택해 보세요." };
+      }
+    }
+    if (step.type === "experiment" && !appState.sim.hasRun) {
+      return { ok:false, message:"먼저 실험을 한 번 진행해 보세요." };
+    }
+    return { ok:true, message:"" };
+  }
+
+  function updateMissionPill() {
+    const idx = appState.lesson.stepIndex;
+    if (idx >= lessonSteps.length - 1 && appState.lesson.answered[String(idx)]) {
+      els.missionPill.textContent = "완료";
+    } else {
+      els.missionPill.textContent = `${idx + 1}단계 진행 중`;
+    }
+  }
+
+  function handleChoiceSubmit(choiceIdx) {
+    const step = lessonSteps[appState.lesson.stepIndex];
+    const feedbackBox = document.getElementById("feedbackBox");
+    if (!feedbackBox) return;
+
+    let correctIdx = step.correct;
+    if (step.type === "observe") {
+      if (!appState.lastRun) {
+        feedbackBox.className = "feedback show wrong";
+        feedbackBox.innerHTML = "먼저 실험을 한 번 완료한 뒤 결과를 보고 선택해 주세요.";
+        audioManager.play("wrong");
+        return;
+      }
+      correctIdx = getObserveCorrectIndex();
+    }
+
+    const isCorrect = choiceIdx === correctIdx;
+    appState.lesson.answered[String(appState.lesson.stepIndex)] = true;
+
+    if (step.type === "predict") {
+      appState.lesson.predictChoice = choiceIdx;
+    }
+
+    if (isCorrect) {
+      feedbackBox.className = "feedback show correct";
+      feedbackBox.innerHTML = `<strong>정답입니다!</strong><br>${step.explanation}`;
+      audioManager.play("correct");
+      showToast("정답이에요!", "success", 1400);
+    } else {
+      feedbackBox.className = "feedback show wrong";
+      feedbackBox.innerHTML = `<strong>다시 생각해 보세요.</strong><br>${step.explanation}`;
+      audioManager.play("wrong");
+      showToast("오답이에요. 해설을 읽어 보세요.", "warn", 1700);
+    }
+    updateMissionPill();
+  }
+
+  /* =========================
+     이벤트 바인딩
+  ========================= */
+  function bindEvents() {
+    // 첫 사용자 상호작용 시 오디오 초기화
+    ["click", "pointerdown", "touchstart"].forEach(evtName => {
+      window.addEventListener(evtName, () => audioManager.resume(), { passive:true, once:false });
+    });
+
+    els.heightRange.addEventListener("input", () => {
+      appState.config.startHeight = Number(els.heightRange.value);
+      appState.objects.forEach(obj => {
+        if (!appState.sim.running) {
+          obj.currentHeight = appState.config.startHeight;
+          obj.startHeight = appState.config.startHeight;
+          obj.distance = 0;
+          obj.velocity = 0;
+          obj.trail = [];
+        }
+      });
+      updateControlValues();
+      updateMetrics();
+      drawScene();
+    });
+
+    els.massARange.addEventListener("input", () => {
+      appState.objects[0].mass = Number(els.massARange.value);
+      updateControlValues();
+      drawScene();
+    });
+
+    els.massBRange.addEventListener("input", () => {
+      appState.objects[1].mass = Number(els.massBRange.value);
+      updateControlValues();
+      drawScene();
+    });
+
+    els.typeASelect.addEventListener("change", () => {
+      appState.objects[0].type = els.typeASelect.value;
+      drawScene();
+      updateMetrics();
+      showToast("물체 A 종류를 변경했어요.", "info", 1400);
+      audioManager.play("click");
+    });
+
+    els.typeBSelect.addEventListener("change", () => {
+      appState.objects[1].type = els.typeBSelect.value;
+      drawScene();
+      updateMetrics();
+      showToast("물체 B 종류를 변경했어요.", "info", 1400);
+      audioManager.play("click");
+    });
+
+    els.planetSelect.addEventListener("change", () => {
+      appState.config.planet = els.planetSelect.value;
+      updateControlValues();
+      updateMetrics();
+      drawScene();
+      showToast(`행성을 ${getPlanetName()}(으)로 바꿨어요.`, "info", 1500);
+      audioManager.play("click");
+    });
+
+    els.airOffBtn.addEventListener("click", () => {
+      appState.config.airResistance = false;
+      updateControlValues();
+      showToast("공기 저항을 OFF로 설정했어요.", "info", 1400);
+      audioManager.play("click");
+    });
+
+    els.airOnBtn.addEventListener("click", () => {
+      appState.config.airResistance = true;
+      updateControlValues();
+      showToast("공기 저항을 ON으로 설정했어요.", "info", 1400);
+      audioManager.play("click");
+    });
+
+    els.soundOnBtn.addEventListener("click", () => {
+      appState.config.soundOn = true;
+      updateControlValues();
+      audioManager.resume();
+      audioManager.play("click");
+      showToast("사운드를 ON으로 설정했어요.", "info", 1400);
+    });
+
+    els.soundOffBtn.addEventListener("click", () => {
+      appState.config.soundOn = false;
+      updateControlValues();
+      showToast("사운드를 OFF로 설정했어요.", "info", 1400);
+    });
+
+    els.startBtn.addEventListener("click", startExperiment);
+    els.pauseBtn.addEventListener("click", pauseExperiment);
+    els.resetBtn.addEventListener("click", () => resetExperiment(true));
+
+    canvas.addEventListener("pointerdown", pointerDown, { passive:false });
+    canvas.addEventListener("pointermove", pointerMove, { passive:false });
+    window.addEventListener("pointerup", pointerUp, { passive:true });
+    canvas.addEventListener("touchstart", pointerDown, { passive:false });
+    canvas.addEventListener("touchmove", pointerMove, { passive:false });
+    window.addEventListener("touchend", pointerUp, { passive:true });
+
+    window.addEventListener("resize", resizeCanvas);
+  }
+
+  /* =========================
+     초기화
+  ========================= */
+  function initDefaults() {
+    appState.objects[0].type = "steel";
+    appState.objects[1].type = "feather";
+    appState.objects[0].mass = 1.0;
+    appState.objects[1].mass = 5.0;
+    appState.config.startHeight = 20;
+    appState.config.planet = "earth";
+    appState.config.airResistance = false;
+    appState.config.soundOn = true;
+
+    els.heightRange.value = "20";
+    els.massARange.value = "1.0";
+    els.massBRange.value = "5.0";
+    els.typeASelect.value = "steel";
+    els.typeBSelect.value = "feather";
+    els.planetSelect.value = "earth";
+
+    resetObjectsForRun();
+    updateControlValues();
+    updateMetrics();
+    updateTopLabels();
+    updateMissionPill();
+  }
+
+  function init() {
+    initDefaults();
+    bindEvents();
+    resizeCanvas();
+    renderStep();
+    updateStatusPanel();
+    requestAnimationFrame(animationLoop);
+    showToast("자유 낙하 운동 실험실이 준비되었어요.", "success", 2200);
+  }
+
+  init();
+
+})();
+</script>
+</body>
+</html>
